@@ -39,7 +39,7 @@ const SingleProductPage = async ({
       <div className="flex flex-col w-full gap-5">
         <div>
           <h2 className='text-3xl font-bold mb-2 md:text-4xl '>{product?.name}</h2>
-          <PriceView price={product?.price} discount={product?.discount} className='text-lg font-bold' />
+          <PriceView price={product?.price??0} discount={product?.discount??0} className='text-lg font-bold' />
         </div>
         {product?.stock && <p className='bg-green-100 w-24 text-center text-green-600 text-sm py-2.5 font-semi-bold rounded-lg'>In Stock</p>}
         <p className='text-sm text-gray-600 tracking-wide'>{product?.description} </p>

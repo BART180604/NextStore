@@ -29,7 +29,7 @@ const OrdersComponent = ({ orders }: { orders: MY_ORDERS_QUERYResult }) => {
                   </TableCell>
                   <TableCell className='hidden md:table-cell'>{order?.email}</TableCell>
                   <TableCell>
-                    <PriceFormat className='text-black font-medium' amount={order?.totalPrice} />
+                    <PriceFormat className='text-black font-medium' amount={order?.totalPrice ?? 0} />
                   </TableCell>
                   <TableCell>
                     {order?.status && <span className={`px-2 py-1 rounded-full text-xs font-semibold ${order?.status === "paid" ? "bg-green-100 text-green-800 " : "bg-yellow-100 text-yellow-800"}`}>{order?.status}</span>}
@@ -46,7 +46,7 @@ const OrdersComponent = ({ orders }: { orders: MY_ORDERS_QUERYResult }) => {
           ))}
         </TooltipProvider>
       </TableBody>
-      <OrderDetailsDialog order={selectedOrder} isOpen={setSelectedOrder} onClose={()=>setSelectedOrder(null)} />
+      <OrderDetailsDialog order={selectedOrder} isOpen={!!setSelectedOrder} onClose={()=>setSelectedOrder(null)} />
     </>
   )
 }

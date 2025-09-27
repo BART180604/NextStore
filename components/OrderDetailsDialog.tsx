@@ -66,7 +66,7 @@ const OrderDetailsDialog = ({order,isOpen,onClose}:Props) => {
 
                             <TableCell>{product?.quantity} </TableCell>
                             <TableCell>
-                                <PriceFormat amount={product?.product?.discount?(product?.product?.price - (product?.product?.price * product?.product?.discount)/100):(product?.product?.price) } className='text-black font-medium'/>
+                                <PriceFormat amount={product?.product?.discount?((product?.product?.price ?? 0 )- ((product?.product?.price ??0) * product?.product?.discount)/100):(product?.product?.price ?? 0)  } className='text-black font-medium'/>
                             </TableCell>
                         </TableRow>
                     ))}
@@ -85,13 +85,13 @@ const OrderDetailsDialog = ({order,isOpen,onClose}:Props) => {
                     {order?.amountDiscount !== 0 && (
                         <div className='w-full flex items-center justify-between'>
                             <strong>Discount</strong>
-                            <PriceFormat amount={order?.amountDiscount} />
+                            <PriceFormat amount={order?.amountDiscount ??0} />
                         </div>
                     )}
                     
                     <div className='w-full flex items-center justify-between'>
                         <strong>Total:</strong>
-                        <PriceFormat amount={order?.totalPrice} className='text-black font-bold' />
+                        <PriceFormat amount={order?.totalPrice ?? 0} className='text-black font-bold' />
 
 
                     </div>

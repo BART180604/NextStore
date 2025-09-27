@@ -17,9 +17,10 @@ import { auth } from '@clerk/nextjs/server'
 const Header = async () => {
   const {userId}=await auth();
   const categories:Category[] = await getAllCategories()
-  let orders=null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let orders:any[]=[];
   if(userId){
-    orders= await getMyOrders(userId);
+    orders= await (getMyOrders(userId)) ?? [];
   }
   return (
     <header className='py-4 border-b border-gray-300 sticky top-0 z-50 bg-white'>
@@ -44,7 +45,7 @@ const Header = async () => {
                     <Link href={"/orders"} className='group relative'>
                       <ListOrdered className='w-5 h-5 group-hover:text-darkColor hoverEffect' />
                       <span className="absolute flex -top-2 -right-1 rounded-full bg-darkColor w-3.5 h-3.5 items-center justify-center text-xs text-white font-semibold">
-                        {orders?.length? orders?.length : 0}
+                        {orders.length}
                       </span>
                     </Link>
                     <UserButton />

@@ -12,7 +12,7 @@ interface Props{
   className ?: string;
 }
 const QuantityButton = ({product,className}:Props) => {
-  const {addItem,decreaseItem,getItemCount,removeItem}= useCartStore()
+  const {addItem,decreaseItem,getItemCount}= useCartStore()
   const quantity=getItemCount(product._id);
 
   return (

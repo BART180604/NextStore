@@ -30,6 +30,7 @@ const ProductsGrid = () => {
         }
       };
       fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     },[selectedTab])
   return (
     <div className="mt-10 flex flex-col items-center  ">

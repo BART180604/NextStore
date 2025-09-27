@@ -18,13 +18,13 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react'
 import { toast } from 'sonner';
 import paypalLogo from "@/images/paypalLogo.png"
-import { metadata } from '../../studio/layout';
 import { createCheckoutSession, Metadata } from '@/actions/createCheckoutSession';
 
 
 const CartPage = () => {
 
   const [isClient,setIsClient]=useState(false);
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
  const[loading,setLoading]=useState(false);
   const {getGroupedItems,getTotalPrice,getItemCount,getSubtotalPrice,resetCart,removeItem}=useCartStore();
   const {isSignedIn}=useAuth();
@@ -69,6 +69,7 @@ const CartPage = () => {
     }
   }
   return (
+    
 <div className='bg-gray-50 pb-52 md:pb-10'>
 
   {/* Vérification si utilisateur connecté */}
@@ -156,7 +157,7 @@ const CartPage = () => {
 
                     {/* Prix + quantité */}
                     <div className="flex flex-col items-start justify-between h-36 md:h-44 p-0.5 md:p-1">
-                      <PriceView price={product?.price} discount={product?.discount} className='font-bold text-lg'/>
+                      <PriceView price={product?.price ?? 0} discount={product?.discount ??0} className='font-bold text-lg'/>
                       <p className="text-sm text-gray-500">Total: <PriceFormat amount={finalPrice} /></p>
                       <QuantityButton product={product} />
                     </div>

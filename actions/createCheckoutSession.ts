@@ -55,7 +55,7 @@ export async function createCheckoutSession(items:CartItem[],metadata:Metadata){
 
             price_data:{
                 currency:"USD",
-                unit_amount:Math.round(item?.product?.discount? (item.product.price!*(1- (item?.product?.discount ?? 0)/100) * 100):item?.product?.price * 100),
+                unit_amount:Math.round(item?.product?.discount? (item.product.price!*(1- (item?.product?.discount ?? 0)/100) * 100): item?.product?.price ??0 * 100),
                 product_data:{
                     name:item.product.name || "Unamed Product",
                     description:item.product.description,

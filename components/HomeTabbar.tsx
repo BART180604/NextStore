@@ -1,6 +1,5 @@
 import { productType } from '@/constants';
 import { Repeat } from 'lucide-react';
-import Link from 'next/link';
 import React from 'react'
 
 interface Props{

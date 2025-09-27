@@ -13,14 +13,14 @@ const NoAccessToCart = () => {
                 <CardTitle className='text-2xl font-bold text-center'>Welcome Back!</CardTitle>
             </CardHeader>
             <CardContent className='space-y-4'>
-                <p>Log In to view your cart items and checkout. Don't miss out on your favorite products! </p>
+                <p>Log In to view your cart items and checkout. Don&apos;t miss out on your favorite products! </p>
                 <SignInButton mode="modal">
                     <Button className='w-full font-semibold' size="lg">Sign In</Button>
                 </SignInButton>
             </CardContent>
             <CardFooter className='space-y-2 flex flex-col'>
                 <div>
-                    Don't have an account?
+                    Don&apos;t have an account?
                 </div>
                 <SignUpButton mode="modal">
                     <Button variant="outline" className='w-full' size="lg" >
