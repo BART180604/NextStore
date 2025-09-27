@@ -3,17 +3,20 @@ import { motion } from "motion/react"
 import Logo from './Logo';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { headerData } from '@/constants';
+
 import { X } from 'lucide-react';
 import SocialMedia from './SocialMedia';
 import { useOutsideClick } from '@/hooks/useOutsideClick';
+import { Category } from '@/sanity.types';
 interface SidebarProps{
     isOpen: boolean;
+    categories:Category[]
     onClose: ()=>void;
     
 }
-const Sidebar= ({isOpen,onClose}:SidebarProps) => {
+const Sidebar= ({isOpen,onClose,categories}:SidebarProps) => {
   const pathname=usePathname();
+  
   const sidebarRef=useOutsideClick<HTMLDivElement>(onClose);
   return (
     <div className={`fixed inset-y-0 bg-darkColor/50 left-0 z-50 shadow-xl hoverEffect cursor-auto w-full ${isOpen ? 'translate-x-0' : '-translate-x-full'} `}>
@@ -35,12 +38,13 @@ const Sidebar= ({isOpen,onClose}:SidebarProps) => {
 
             </div>
             <div className="flex flex-col gap-3.5 text-base font-semibold tracking-wide ">
-                {headerData?.map((item)=>(
-                    <Link key={item?.title} href={item?.href} className={`hover:text-white hover:bg-gray-800 hoverEffect relative group ${pathname===item?.href ? 'text-darkColor':''}`}>
-                    {item?.title}
+                <Link href={"/"} className={`hover:text-white hover:bg-gray-800 hoverEffect relative group ${pathname==="/" && "text-darkBlue"}`}>Home</Link>
+                {categories?.length? categories?.map((category)=>(
+                    <Link key={category?._id} href={`/category/${category?.slug?.current}`} className={`hover:text-white hover:bg-gray-800 hoverEffect relative group ${pathname===`/category/${category?.slug?.current}`? 'text-darkBlue':''}`}>
+                    {category?.title}
                     
                     </Link>
-                ))}
+                )): <p>No categories found</p> }
             </div>  
             <SocialMedia />
         </motion.div>
