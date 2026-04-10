@@ -7,6 +7,10 @@ import { getProductBySlug } from '@/sanity/helpers/query';
 import { BoxIcon, FileQuestion, Heart, ListOrderedIcon, ShareIcon } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import React from 'react'
+import Image from 'next/image';
+import { urlFor } from '@/sanity/lib/image';
+import Link from 'next/link';
+import { Product } from '@/sanity.types';
 
 const SingleProductPage = async ({
   params,
@@ -42,14 +46,39 @@ const SingleProductPage = async ({
           <PriceView price={product?.price??0} discount={product?.discount??0} className='text-lg font-bold' />
         </div>
         {product?.stock && <p className='bg-green-100 w-24 text-center text-green-600 text-sm py-2.5 font-semi-bold rounded-lg'>In Stock</p>}
+        
+        {product?.store && (
+          <div className="flex items-center gap-3 p-4 bg-zinc-50 rounded-xl border border-zinc-100">
+            {product.store.logo && (
+               <Image 
+                src={urlFor(product.store.logo).url()} 
+                width={40} 
+                height={40} 
+                alt="Store Logo" 
+                className="rounded-full bg-white p-1 border"
+               />
+            )}
+            <div>
+              <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Sold by</p>
+              <Link href={`/store/${product.store.slug?.current}`} className="font-bold text-darkColor hover:text-blue-600 transition-colors">
+                {product.store.name}
+              </Link>
+            </div>
+          </div>
+        )}
+
         <p className='text-sm text-gray-600 tracking-wide'>{product?.description} </p>
         <div className="flex items-center gap-2.5 lg:gap-5">
-          <AddToCart  product={product} className='bg-darkColor/80 w-full text-white hover:bg-darkColor hoverEffect rounded-md hover:border-darkColor hover:text-white ' discountedPrice={finalPrice} />
+          <AddToCart
+              product={product as unknown as Product}
+              className='bg-darkColor/80 w-full text-white hover:bg-darkColor hoverEffect rounded-md hover:border-darkColor hover:text-white'
+              discountedPrice={finalPrice}
+          />
           <button className='border-2 border-darkColor /30 text-darkColor/60 px-6 py-1.5'>
             <Heart className="w-5 h-5"  />
           </button>
         </div>
-        <ProductCaracteristics product={product} />
+        <ProductCaracteristics product={product as unknown as Product} />
         <div className='flex flex-wrap justify-between items-center gap-2.5 border-b border-b-gray-200 py-5 mt-2'>
           <div className="text-sm flex items-center gap-2 text-black hover:text-red-600 hoverEffect" >
             <BoxIcon className='w-5 h-5' />

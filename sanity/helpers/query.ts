@@ -4,7 +4,11 @@ import { Category } from "@/sanity.types";
 import { client } from "../lib/client";
 
 export const getProductBySlug= async(slug:string)=>{
-    const PRODUCT_BY_SLUG_QUERY =defineQuery(`*[_type =='product' && slug.current == $slug] | order(name asc) [0]`);
+    const PRODUCT_BY_SLUG_QUERY =defineQuery(`*[_type =='product' && slug.current == $slug] | order(name asc) [0]{
+        ...,
+        store->,
+        category[]->
+    }`);
 
     try {
         const product = await sanityFetch(

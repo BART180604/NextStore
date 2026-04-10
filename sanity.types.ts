@@ -22,6 +22,19 @@ export type ProductReference = {
   [internalGroqTypeReferenceTo]?: "product";
 };
 
+export type Review = {
+  _id: string;
+  _type: "review";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  product?: ProductReference;
+  author?: string;
+  rating?: number;
+  comment?: string;
+  verifiedPurchase?: boolean;
+};
+
 export type Order = {
   _id: string;
   _type: "order";
@@ -68,6 +81,13 @@ export type CategoryReference = {
   [internalGroqTypeReferenceTo]?: "category";
 };
 
+export type StoreReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "store";
+};
+
 export type Product = {
   _id: string;
   _type: "product";
@@ -93,11 +113,32 @@ export type Product = {
       _key: string;
     } & CategoryReference
   >;
+  store?: StoreReference;
   stock?: number;
   status?: "new" | "hot" | "sale";
   variantType?: "tshirt" | "jacket" | "pants" | "hoodie" | "short" | "others";
   colors?: Array<string>;
   sizes?: Array<string>;
+};
+
+export type Store = {
+  _id: string;
+  _type: "store";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  slug?: Slug;
+  logo?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  description?: string;
+  vendor?: string;
+  rating?: number;
 };
 
 export type SanityImageCrop = {
@@ -238,10 +279,13 @@ export type Geopoint = {
 
 export type AllSanitySchemaTypes =
   | ProductReference
+  | Review
   | Order
   | SanityImageAssetReference
   | CategoryReference
+  | StoreReference
   | Product
+  | Store
   | SanityImageCrop
   | SanityImageHotspot
   | Slug
@@ -257,7 +301,7 @@ export type AllSanitySchemaTypes =
 
 // Source: sanity/helpers/query.ts
 // Variable: PRODUCT_BY_SLUG_QUERY
-// Query: *[_type =='product' && slug.current == $slug] | order(name asc) [0]
+// Query: *[_type =='product' && slug.current == $slug] | order(name asc) [0]{        ...,        store->,        category[]->    }
 export type PRODUCT_BY_SLUG_QUERY_RESULT = {
   _id: string;
   _type: "product";
@@ -278,11 +322,42 @@ export type PRODUCT_BY_SLUG_QUERY_RESULT = {
   description?: string;
   price?: number;
   discount?: number;
-  category?: Array<
-    {
-      _key: string;
-    } & CategoryReference
-  >;
+  category: Array<{
+    _id: string;
+    _type: "category";
+    _createdAt: string;
+    _updatedAt: string;
+    _rev: string;
+    title?: string;
+    slug?: Slug;
+    description?: string;
+    image?: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+  }> | null;
+  store: {
+    _id: string;
+    _type: "store";
+    _createdAt: string;
+    _updatedAt: string;
+    _rev: string;
+    name?: string;
+    slug?: Slug;
+    logo?: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    description?: string;
+    vendor?: string;
+    rating?: number;
+  } | null;
   stock?: number;
   status?: "hot" | "new" | "sale";
   variantType?: "hoodie" | "jacket" | "others" | "pants" | "short" | "tshirt";
@@ -358,6 +433,7 @@ export type MY_ORDERS_QUERY_RESULT = Array<{
           _key: string;
         } & CategoryReference
       >;
+      store?: StoreReference;
       stock?: number;
       status?: "hot" | "new" | "sale";
       variantType?:
@@ -386,7 +462,7 @@ export type MY_ORDERS_QUERY_RESULT = Array<{
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    "*[_type =='product' && slug.current == $slug] | order(name asc) [0]": PRODUCT_BY_SLUG_QUERY_RESULT;
+    "*[_type =='product' && slug.current == $slug] | order(name asc) [0]{\n        ...,\n        store->,\n        category[]->\n    }": PRODUCT_BY_SLUG_QUERY_RESULT;
     "*[_type=='category'] | order(title asc)": QueryResult;
     '*[_type=="order" && clerkUserId==$userId] | order(orderDate desc){\n        ...,\n        products[]{\n            ...,\n            product->\n        }\n    }': MY_ORDERS_QUERY_RESULT;
   }
