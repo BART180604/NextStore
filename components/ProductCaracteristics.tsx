@@ -17,7 +17,7 @@ const ProductCaracteristics = ({product}:{product:Product}) => {
             Collection: <span className='font-semibold tracking-wide'>2025</span>
           </p>
           <p className='flex items-center justify-between'>
-            Type: <span className='font-semibold tracking-wide'>{product?.variants}</span>
+            Type: <span className='font-semibold tracking-wide'>{product?.variantType}</span>
           </p>
           <p className='flex items-center justify-between'>
             Stock: <span className='font-semibold tracking-wide'>{product?.stock? "Available":"Out of Stock"} </span>

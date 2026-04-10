@@ -81,8 +81,8 @@ export const productType = defineType({
         },
     }),
     defineField({
-        name:"variants",
-        title:"Product Type",
+        name:"variantType",
+        title:"Product Category/Type",
         type:"string",
         options:{
             list:[
@@ -92,10 +92,26 @@ export const productType = defineType({
                 {title:"Hoodie",value:"hoodie"},
                 {title:"Short",value:"short"},
                 {title:"Others",value:"others"},
-                
             ]
         }
-            
+    }),
+    defineField({
+        name: "colors",
+        title: "Available Colors",
+        type: "array",
+        of: [{ type: "string" }],
+        options: {
+            layout: "tags"
+        }
+    }),
+    defineField({
+        name: "sizes",
+        title: "Available Sizes",
+        type: "array",
+        of: [{ type: "string" }],
+        options: {
+            layout: "tags"
+        }
     }),
  ],
  //Interface d'appercu

@@ -84,6 +84,16 @@ export const orderType=defineType({
                             title:"Quantity Purchased",
                             type:"number"
                         }),
+                        defineField({
+                            name: "color",
+                            title: "Selected Color",
+                            type: "string"
+                        }),
+                        defineField({
+                            name: "size",
+                            title: "Selected Size",
+                            type: "string"
+                        }),
                     ],
                     preview:{
                         select:{
@@ -92,10 +102,13 @@ export const orderType=defineType({
                             image:"product.image.0",
                             price:"product.price",
                             currency:"product.currency",
+                            color: "color",
+                            size: "size"
                         },
                         prepare(select){
+                            const variant = [select.color, select.size].filter(Boolean).join(" / ");
                             return{
-                                title:`${select.product} x ${select.quantity}`,
+                                title:`${select.product} ${variant ? `(${variant})` : ""} x ${select.quantity}`,
                                 subtitle:`${select.price * select.quantity}`,
                                 media:select.image,
                             }

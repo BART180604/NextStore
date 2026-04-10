@@ -24,8 +24,7 @@ import { createCheckoutSession, Metadata } from '@/actions/createCheckoutSession
 const CartPage = () => {
 
   const [isClient,setIsClient]=useState(false);
- // eslint-disable-next-line @typescript-eslint/no-unused-vars
- const[loading,setLoading]=useState(false);
+  const[loading,setLoading]=useState(false);
   const {getGroupedItems,getTotalPrice,getItemCount,getSubtotalPrice,resetCart,removeItem}=useCartStore();
   const {isSignedIn}=useAuth();
   const {user} = useUser()
@@ -39,13 +38,17 @@ const CartPage = () => {
   }
 
   const cartProducts=getGroupedItems();
+  
+  if (cartProducts.length === 0 && isSignedIn) {
+    return <EmptyCart />
+  }
+
   const handleReset = () =>{
     const confirmed = window.confirm("Are you sure to reset your cart🫣?");
     if(confirmed){
       resetCart()
       toast.success("Your cart reset successfully!")
     }
-    toast.success("Cart reset cancelled.😮‍💨")
   }
 
   const handleCheckout=async()=>{
@@ -64,181 +67,155 @@ const CartPage = () => {
       }
     } catch (error) {
       console.error("Error creating checkout session:",error)
+      toast.error("Checkout failed. Please try again.")
     }finally{
       setLoading(false)
     }
   }
   return (
     
-<div className='bg-gray-50 pb-52 md:pb-10'>
+<div className='bg-gray-50 pb-52 md:pb-10 min-h-screen'>
 
-  {/* Vérification si utilisateur connecté */}
   {isSignedIn ? (
-
     <Container>
-
-      {/* Header du panier */}
       <div className="flex items-center gap-2 py-5">
         <ShoppingBag />
         <h1 className='text-2xl font-semibold'>Shopping Cart</h1>
       </div>
 
       <div className="grid lg:grid-cols-3 md:gap-8">
-
-        {/* ------------------ Section Produits ------------------ */}
         <div className="lg:col-span-2 rounded-lg">
           <div className='border bg-white rounded-md'>
-
-            {/* Liste des produits */}
-            {cartProducts?.map(({ product }) => {
-              const itemCount = getItemCount(product?._id)
-              const price = product?.price ?? 0
-              const finalPrice = product?.discount
-                ? (price - (product?.discount * price) / 100) * itemCount
-                : itemCount * price
+            {cartProducts?.map((item) => {
+              const { product, selectedColor, selectedSize } = item;
+              const itemCount = getItemCount(product?._id, selectedColor, selectedSize);
+              const price = product?.price ?? 0;
+              const discount = product?.discount ?? 0;
+              const finalPrice = discount
+                ? (price - (discount * price) / 100) * itemCount
+                : itemCount * price;
 
               return (
-                <div key={product?._id} className='border-b p-2.5 last:border-b-0 flex items-center justify-between gap-5 '>
-
-                  {/* Image + infos produit */}
-                  <div className="flex flex-1 items-center gap-2 h-36 md:h-44">
-                    
-                    {/* Image */}
+                <div key={`${product?._id}-${selectedColor}-${selectedSize}`} className='border-b p-4 last:border-b-0 flex flex-col md:flex-row items-center justify-between gap-5 '>
+                  <div className="flex flex-1 items-center gap-4 w-full">
                     {product?.image && (
-                      <Link href={`/product/${product?.slug?.current}`} className='border p-0.5 md:p-1 mr-2 group'>
+                      <Link href={`/product/${product?.slug?.current}`} className='border p-1 group shrink-0'>
                         <Image 
                           src={urlFor(product?.image[0]).url()}
                           alt="productImage"
-                          width={500}
-                          height={500}
-                          loading="lazy"
-                          className='w-32 md:w-40 h-32 md:h-40 object-cover group-hover:scale-105 overflow-hidden hoverEffect'
+                          width={150}
+                          height={150}
+                          className='w-24 h-24 md:w-32 md:h-32 object-cover group-hover:scale-105 transition-transform'
                         />
                       </Link>
                     )}
 
-                    {/* Infos texte */}
-                    <div className="h-full flex flex-1 items-start flex-col justify-between py-1 ">
-                      <div className="space-y-1.5">
-                        <h2 className='font-semibold line-clamp-1'>{product?.name}</h2>
-                        <p className='text-lightColor font-medium text-sm '>{product?.intro}</p>
-                        <p className='text-sm capitalize '>Variants: <span className='font-semibold'>{product?.variants}</span></p>
-                        <p className='text-sm capitalize'> Status: <span className='font-semibold'>{product?.status}</span></p>
+                    <div className="flex-1 flex flex-col justify-between py-1 min-h-[100px]">
+                      <div className="space-y-1">
+                        <h2 className='font-bold text-base md:text-lg line-clamp-1'>{product?.name}</h2>
+                        <div className='flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600'>
+                          {selectedColor && (
+                            <p>Color: <span className='font-semibold text-darkColor'>{selectedColor}</span></p>
+                          )}
+                          {selectedSize && (
+                            <p>Size: <span className='font-semibold text-darkColor'>{selectedSize}</span></p>
+                          )}
+                        </div>
+                        <p className='text-xs text-gray-400 capitalize'>Status: {product?.status}</p>
                       </div>
 
-                      {/* Icons */}
-                      <div className="text-gray-500 flex items-center gap-2">
+                      <div className="flex items-center gap-4 mt-2">
                         <TooltipProvider>
                           <Tooltip>
-                            <TooltipTrigger>
-                              <Heart className='w-4 h-4 md:w-5 md:h-5 hover:text-green-500' />
+                            <TooltipTrigger asChild>
+                              <button className='hover:text-green-600 transition-colors'>
+                                <Heart className='w-5 h-5' />
+                              </button>
                             </TooltipTrigger>
-                            <TooltipContent className='font-bold'>
-                              Add to favorite
-                            </TooltipContent>
+                            <TooltipContent>Add to favorites</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
 
                         <TooltipProvider>
                           <Tooltip>
-                            <TooltipTrigger>
-                              <Trash 
-                                onClick={() => { removeItem(product?._id); toast.success(`${product?.name} removed successfully from your cart`) }}
-                                className='w-4 h-4 md:w-5 md:h-5 hover:text-red-500' 
-                              />
+                            <TooltipTrigger asChild>
+                              <button 
+                                onClick={() => { 
+                                  removeItem(product?._id, selectedColor, selectedSize); 
+                                  toast.success(`${product?.name} removed`) 
+                                }}
+                                className='hover:text-red-600 transition-colors'
+                              >
+                                <Trash className='w-5 h-5' />
+                              </button>
                             </TooltipTrigger>
-                            <TooltipContent className='font-bold bg-red-600'>
-                              Delete from cart
-                            </TooltipContent>
+                            <TooltipContent className='bg-red-600 text-white'>Remove item</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Prix + quantité */}
-                    <div className="flex flex-col items-start justify-between h-36 md:h-44 p-0.5 md:p-1">
-                      <PriceView price={product?.price ?? 0} discount={product?.discount ??0} className='font-bold text-lg'/>
-                      <p className="text-sm text-gray-500">Total: <PriceFormat amount={finalPrice} /></p>
-                      <QuantityButton product={product} />
+                  <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-4">
+                    <div className='text-right'>
+                      <PriceView price={price} discount={discount} className='font-bold text-lg text-darkColor'/>
+                      <p className="text-xs text-gray-500 mt-1">Subtotal: <PriceFormat amount={finalPrice} /></p>
                     </div>
-
+                    <QuantityButton product={product} selectedColor={selectedColor} selectedSize={selectedSize} />
                   </div>
                 </div>
               )
             })}
 
-            {/* Bouton reset */}
-            <Button onClick={() => handleReset()} className='m-5 font-semibold' variant="destructive">Reset Cart</Button>
-
+            <div className='p-4 border-t bg-gray-50/50 flex justify-between items-center'>
+               <Button onClick={handleReset} variant="outline" size="sm" className='text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 font-semibold'>
+                 Reset Cart
+               </Button>
+               <p className='text-sm text-gray-500'>{cartProducts.length} unique items in cart</p>
+            </div>
           </div>
         </div>
 
-        {/* ------------------ Section Résumé ------------------ */}
-        <div className="lg:col-span-1">
-
-          {/* Résumé pour desktop */}
-          <div className="hidden md:inline-block w-full bg-white p-6 rounded-lg border">
-            <h2 className='text-xl'>Order Summary</h2>
+        <div className="lg:col-span-1 mt-8 lg:mt-0">
+          <div className="sticky top-24 bg-white p-6 rounded-lg border shadow-sm">
+            <h2 className='text-xl font-bold mb-6'>Order Summary</h2>
             <div className="space-y-4">
-              <div className="flex justify-between">
+              <div className="flex justify-between text-gray-600">
                 <span>Subtotal:</span>
                 <PriceFormat amount={getSubtotalPrice()} />
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between text-green-600">
                 <span>Discount:</span>
                 <PriceFormat amount={getSubtotalPrice() - getTotalPrice()} />
               </div>
               <Separator />
-              <div className="flex justify-between">
-                <span>Total</span>
-                <PriceFormat amount={getSubtotalPrice()} className='text-lg font-bold text-black'/>
+              <div className="flex justify-between items-center">
+                <span className='font-bold text-lg'>Total</span>
+                <PriceFormat amount={getTotalPrice()} className='text-2xl font-bold text-darkColor'/>
               </div>
-              <Button onClick={handleCheckout} className='w-full rounded-full font-semibold tracking-wide' size="lg">Proceed to Checkout</Button>
-              <Link href={"/"} className='flex items-center justify-center py-2 border-darkColor/50 rounded-full hover:border-darkColor hover:bg-darkColor/50 hoverEffect'>
-                <Image src={paypalLogo} alt="paypalLogo" className='w-20'/>
-              </Link>
+              
+              <Button 
+                onClick={handleCheckout} 
+                disabled={loading}
+                className='w-full rounded-full font-bold h-12 text-base mt-4'
+              >
+                {loading ? "Processing..." : "Proceed to Checkout"}
+              </Button>
+              
+              <div className='flex flex-col items-center gap-2 mt-4'>
+                <p className='text-xs text-gray-400'>Secure payment powered by</p>
+                <Image src={paypalLogo} alt="paypalLogo" className='w-24 grayscale opacity-70'/>
+              </div>
             </div>
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* ------------------ Section résumé mobile ------------------ */}
-      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white pt-2">
-        <div className="p-4 rounded-lg border mx-4">
-          <h2 className='text-xl'>Order Summary</h2>
-          <div className="space-y-4">
-            <div className="flex justify-between">
-              <span>Subtotal:</span>
-              <PriceFormat amount={getSubtotalPrice()} />
-            </div>
-            <div className="flex justify-between">
-              <span>Discount:</span>
-              <PriceFormat amount={getSubtotalPrice() - getTotalPrice()} />
-            </div>
-            <Separator />
-            <div className="flex justify-between">
-              <span>Total</span>
-              <PriceFormat amount={getSubtotalPrice()} className='text-lg font-bold text-black'/>
-            </div>
-            <Button onClick={handleCheckout} className='w-full rounded-full font-semibold tracking-wide' size="lg">Proceed to Checkout</Button>
-            <Link href={"/"} className='flex items-center justify-center py-2 border border-darkColor/50  rounded-full hover:border-darkColor hover:bg-darkColor/50 hoverEffect'>
-              <Image src={paypalLogo} alt="paypalLogo" className='w-20'/>
-            </Link>
           </div>
         </div>
       </div>
-
     </Container>
-
   ) : (
-    cartProducts?.length ? <EmptyCart /> : <NoAccessToCart />
+    <NoAccessToCart />
   )}
-
 </div>
-
   )
 }
 
-export default CartPage
+export default CartPage;

@@ -10,7 +10,7 @@ const HeaderMenu = ({categories}:{categories:Category[]}) => {
   return (
   
     
-    <div className="hidden md:inline-flex w-1/3 items-center gap-5 text-sm capitalize font-semibold cursor-pointer ">
+    <div className="hidden md:inline-flex w-1/3 items-center gap-5 text-sm capitalize font-semibold cursor-pointer  ">
 
       <Link href={"/"} className={`hover:text-darkColor hoverEffect relative group ${pathname==="/" && "text-darkColor"}`}>
        Home

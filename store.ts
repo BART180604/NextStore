@@ -5,18 +5,20 @@ import { Product } from "./sanity.types";
 export interface CartItem {
   product: Product;
   quantity: number;
+  selectedColor?: string;
+  selectedSize?: string;
 }
 
 interface CartState {
   items: CartItem[];
-  addItem: (product: Product) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  decreaseItem:(productId:string)=>void;
-  removeItem: (productId: string) => void;
+  addItem: (product: Product, selectedColor?: string, selectedSize?: string) => void;
+  updateQuantity: (productId: string, quantity: number, color?: string, size?: string) => void;
+  decreaseItem: (productId: string, color?: string, size?: string) => void;
+  removeItem: (productId: string, color?: string, size?: string) => void;
   resetCart: () => void;
   getTotalPrice: () => number;
   getSubtotalPrice: () => number;
-  getItemCount: (productId: string) => number;
+  getItemCount: (productId: string, color?: string, size?: string) => number;
   getGroupedItems: () => CartItem[];
 }
 
@@ -25,84 +27,87 @@ const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       
-      addItem: (product) => set((state) => {
-        // Vérifier si le produit est déjà dans le panier
-        const existingItem = state.items.find((item) => item.product._id === product._id);
+      addItem: (product, color, size) => set((state) => {
+        // Un item est unique par son ID ET ses variantes
+        const existingItem = state.items.find((item) => 
+          item.product._id === product._id && 
+          item.selectedColor === color && 
+          item.selectedSize === size
+        );
         
         if (existingItem) {
-          // Incrémenter la quantité si le produit existe
           return {
             items: state.items.map((item) => 
-              item.product._id === product._id 
+              (item.product._id === product._id && item.selectedColor === color && item.selectedSize === size)
                 ? { ...item, quantity: item.quantity + 1 }
                 : item
             )
           };
         } else {
-          // Ajouter le nouveau produit
           return { 
-            items: [...state.items, { product, quantity: 1 }] 
+            items: [...state.items, { product, quantity: 1, selectedColor: color, selectedSize: size }] 
           };
         }
       }),
 
-      removeItem: (productId) => set((state) => {
-        // Vérifier si le produit à supprimer est dans le panier
-        const existingItem = state.items.find((item) => item.product._id === productId);
-        
-        if (existingItem) {
-          return { 
-            items: state.items.filter((item) => item.product._id !== productId) // ← FIX principal
-          };
-        } else {
-          console.log("Produit non trouvé dans le panier");
-          return { items: state.items };
-        }
-      }),
+      removeItem: (productId, color, size) => set((state) => ({ 
+        items: state.items.filter((item) => 
+          !(item.product._id === productId && item.selectedColor === color && item.selectedSize === size)
+        )
+      })),
 
-      // Placeholders pour les fonctions non implémentées
-      updateQuantity: (productId, quantity) => set((state)=>{
-        if(quantity<=0){
-            //remove from carte
-            return {items:state.items.filter((item)=>item.product._id!==productId)}
+      updateQuantity: (productId, quantity, color, size) => set((state) => {
+        if (quantity <= 0) {
+          return { 
+            items: state.items.filter((item) => 
+              !(item.product._id === productId && item.selectedColor === color && item.selectedSize === size)
+            ) 
+          };
         }
-        //sinon on conserve la quantity entré
         return {
-            items:state.items.map((item)=>item.product._id===productId ? {... item,quantity}:item)
-        }
+          items: state.items.map((item) => 
+            (item.product._id === productId && item.selectedColor === color && item.selectedSize === size)
+              ? { ...item, quantity }
+              : item
+          )
+        };
       }),
 
-      decreaseItem:(productId)=>set((state)=>{
-        //on décremente la quantité
-       const decreased = state.items.map((item)=>item.product._id===productId ? {...item,quantity:item.quantity-1} : item )
-       return {items: decreased.filter((item)=> item.quantity > 0)}
+      decreaseItem: (productId, color, size) => set((state) => {
+        const decreased = state.items.map((item) => 
+          (item.product._id === productId && item.selectedColor === color && item.selectedSize === size)
+            ? { ...item, quantity: item.quantity - 1 } 
+            : item 
+        );
+        return { items: decreased.filter((item) => item.quantity > 0) };
       }),
-   // À implémenter plus tard
-      resetCart: () => set({items:[]}),
+
+      resetCart: () => set({ items: [] }),
+
       getTotalPrice: () => {
-
-        const {items}=get();
-
-        return items.reduce((total,item)=>total + (item.product.price ?? 0) * item.quantity , 0  )
-        
+        const { items } = get();
+        return items.reduce((total, item) => total + (item.product.price ?? 0) * item.quantity, 0);
       }, 
 
       getSubtotalPrice: () => {
-        const {items}=get();
-        return items.reduce((total,item)=>{
-            const price=item.product.price ?? 0;
-            const discount=((item.product.discount ?? 0) * price) / 100;
-            const discountedPrice = price - discount;
-            return total + discountedPrice * item.quantity ;
-       },0)
-
+        const { items } = get();
+        return items.reduce((total, item) => {
+          const price = item.product.price ?? 0;
+          const discount = ((item.product.discount ?? 0) * price) / 100;
+          const discountedPrice = price - discount;
+          return total + discountedPrice * item.quantity;
+        }, 0);
       },
-      
 
-      getItemCount: (productId) => {
-        const item = get().items.find((item)=>item.product._id===productId)
+      getItemCount: (productId, color, size) => {
+        const item = get().items.find((item) => 
+          item.product._id === productId && 
+          item.selectedColor === color && 
+          item.selectedSize === size
+        );
         return item ? item.quantity : 0;
       }, 
+
       getGroupedItems: () => get().items,
     }),
     { 
